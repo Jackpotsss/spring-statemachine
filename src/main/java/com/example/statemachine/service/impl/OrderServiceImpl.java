@@ -8,12 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
+import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.persist.StateMachinePersister;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class OrderServiceImpl implements IOrderService {
@@ -21,12 +20,13 @@ public class OrderServiceImpl implements IOrderService {
     @Resource
     private StateMachine<OrderStatus, OrderEvent> orderStateMachine;
 
+//    private StateMachineFactory stateMachineFactory;
+
     @Autowired
     private StateMachinePersister<OrderStatus, OrderEvent, Order> persister;
 
-    private Map<Integer, Order> orders = new HashMap<>();
-
     public Order createOrder(int id) {
+
         Order order = new Order();
         order.setStatus(OrderStatus.WAIT_PAYMENT);
         order.setId(id);
@@ -71,10 +71,7 @@ public class OrderServiceImpl implements IOrderService {
         boolean result = false;
         try {
             orderStateMachine.start();
-            //尝试恢复状态机状态()
-            persister.restore(orderStateMachine, order);
-            //添加延迟用于线程安全测试
-//            Thread.sleep(500);
+            persister.restore(orderStateMachine, order); //尝试恢复状态机状态
             result = orderStateMachine.sendEvent(message);
             //持久化状态机状态
             persister.persist(orderStateMachine, order);

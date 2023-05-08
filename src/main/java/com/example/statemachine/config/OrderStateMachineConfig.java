@@ -12,10 +12,7 @@ import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
-import org.springframework.statemachine.listener.StateMachineListener;
-import org.springframework.statemachine.listener.StateMachineListenerAdapter;
 import org.springframework.statemachine.persist.DefaultStateMachinePersister;
-import org.springframework.statemachine.state.State;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
 
 import java.util.EnumSet;
@@ -70,16 +67,17 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
         return new DefaultStateMachinePersister<>(new StateMachinePersist<OrderStatus, OrderEvent, Order>() {
             @Override
             public void write(StateMachineContext<OrderStatus, OrderEvent> context, Order order) throws Exception {
-                order.setStatus(context.getState());
-                //此处并没有进行持久化操作
+                order.setStatus(context.getState());    //将状态机的最新状态赋值给业务对象
+                //TODO 省略持久化操作，如数据库、Redis等
             }
 
             @Override
             public StateMachineContext<OrderStatus, OrderEvent> read(Order order) throws Exception {
-                //此处直接获取Order中的状态，其实并没有进行持久化读取操作
+                //此处直接获取Order中的状态，其实并没有在其他介质中进行读取操作
                 return new DefaultStateMachineContext(order.getStatus(), null, null, null);
             }
         });
     }
+
 
 }
